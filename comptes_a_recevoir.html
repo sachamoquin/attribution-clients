@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finaxis - Comptes à recevoir</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+      color: #1a2332;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      width: 200px;
+      min-width: 200px;
+      background: #fff;
+      border-right: 1px solid #edf0f3;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid #edf0f3;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #0d9488, #14b8a6);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-size: 14px; letter-spacing: -1px;
+    }
+    .logo-text { font-weight: 700; font-size: 14px; color: #1a2332; line-height: 1.1; }
+    .logo-sub { font-size: 9px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .sidebar-section { padding: 16px 12px 4px; }
+    .sidebar-section-label {
+      font-size: 10px; font-weight: 700; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      padding: 0 8px; margin-bottom: 4px;
+    }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: 7px;
+      font-size: 13px; color: #4b5563; cursor: pointer;
+      text-decoration: none; transition: all 0.15s;
+      position: relative;
+    }
+    .sidebar-item:hover { background: #f8fafc; color: #1a2332; }
+    .sidebar-item.active { background: #f0fdfa; color: #0d9488; font-weight: 600; }
+    .sidebar-item .icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+    .sidebar-badge {
+      margin-left: auto; background: #0d9488; color: #fff;
+      font-size: 10px; font-weight: 700; border-radius: 10px;
+      padding: 1px 6px; min-width: 18px; text-align: center;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      position: fixed; top: 0; left: 200px; right: 0; height: 52px;
+      background: #fff; border-bottom: 1px solid #edf0f3;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; z-index: 99;
+    }
+    .header-breadcrumb {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: #94a3b8;
+    }
+    .header-breadcrumb .current { color: #1a2332; font-weight: 500; }
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .lang-btn {
+      padding: 4px 10px; border-radius: 6px; border: 1px solid #e2e6ea;
+      font-size: 12px; font-weight: 500; cursor: pointer; background: #fff;
+      color: #4b5563; transition: all 0.15s;
+    }
+    .lang-btn.active { background: #0d9488; color: #fff; border-color: #0d9488; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+
+    /* ─── MAIN ─── */
+    .main {
+      margin-left: 200px;
+      margin-top: 52px;
+      flex: 1;
+      padding: 24px 28px;
+      min-width: 0;
+    }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-title { font-size: 22px; font-weight: 700; color: #1a2332; }
+    .usage-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid #e2e6ea;
+      border-radius: 8px; padding: 6px 12px;
+      font-size: 12px; color: #64748b;
+    }
+    .usage-bar-wrap { width: 60px; height: 5px; background: #e2e6ea; border-radius: 3px; overflow: hidden; }
+    .usage-bar-fill { height: 100%; width: 1%; background: #0d9488; border-radius: 3px; }
+
+    /* ─── KPI CARDS ─── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .kpi-card {
+      background: #fff;
+      border: 1px solid #edf0f3;
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex; align-items: flex-start; gap: 14px;
+      transition: box-shadow 0.15s;
+    }
+    .kpi-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+    .kpi-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .kpi-icon.teal { background: #f0fdfa; }
+    .kpi-icon.orange { background: #fff7ed; }
+    .kpi-icon.red { background: #fef2f2; }
+    .kpi-body { flex: 1; min-width: 0; }
+    .kpi-label { font-size: 12px; color: #64748b; font-weight: 500; margin-bottom: 4px; }
+    .kpi-value { font-size: 22px; font-weight: 700; color: #1a2332; line-height: 1.1; }
+    .kpi-value.orange { color: #ea580c; }
+    .kpi-value.red { color: #dc2626; }
+    .kpi-sub { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+
+    /* Carte critique avec bordure gauche colorée */
+    .kpi-card.critical { border-left: 3px solid #dc2626; }
+    .kpi-card.warning { border-left: 3px solid #ea580c; }
+    .kpi-card.normal { border-left: 3px solid #0d9488; }
+
+    /* ─── TABS ─── */
+    .tabs-bar {
+      display: flex; align-items: center; gap: 0;
+      border-bottom: 2px solid #edf0f3;
+      margin-bottom: 16px;
+    }
+    .tab {
+      padding: 10px 18px; font-size: 13px; font-weight: 500;
+      color: #64748b; cursor: pointer; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: all 0.15s; white-space: nowrap;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tab:hover { color: #1a2332; }
+    .tab.active { color: #0d9488; border-bottom-color: #0d9488; font-weight: 600; }
+    .tab-count {
+      background: #f1f5f9; color: #64748b;
+      font-size: 11px; font-weight: 600; border-radius: 10px;
+      padding: 1px 7px;
+    }
+    .tab.active .tab-count { background: #f0fdfa; color: #0d9488; }
+    .tab-add {
+      margin-left: 4px; width: 28px; height: 28px; border-radius: 6px;
+      border: 1.5px dashed #cbd5e1; display: flex; align-items: center;
+      justify-content: center; color: #94a3b8; cursor: pointer; font-size: 16px;
+      transition: all 0.15s; align-self: center;
+    }
+    .tab-add:hover { border-color: #0d9488; color: #0d9488; background: #f0fdfa; }
+
+    /* ─── TOOLBAR ─── */
+    .toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 14px;
+    }
+    .toolbar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .toolbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .filter-chip {
+      display: flex; align-items: center; gap: 6px;
+      background: #f0fdfa; border: 1px solid #99f6e4;
+      border-radius: 20px; padding: 5px 10px 5px 12px;
+      font-size: 12px; color: #0d9488; font-weight: 500;
+    }
+    .filter-chip-remove {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #ccfbf1; display: flex; align-items: center;
+      justify-content: center; cursor: pointer; font-size: 10px;
+      color: #0d9488; transition: all 0.15s;
+    }
+    .filter-chip-remove:hover { background: #0d9488; color: #fff; }
+
+    .btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 7px; font-size: 13px;
+      font-weight: 500; cursor: pointer; transition: all 0.15s;
+      border: none; white-space: nowrap;
+    }
+    .btn-ghost {
+      background: transparent; color: #64748b;
+      border: 1px solid #e2e6ea;
+    }
+    .btn-ghost:hover { background: #f8fafc; color: #1a2332; border-color: #cbd5e1; }
+    .btn-primary {
+      background: #0d9488; color: #fff;
+    }
+    .btn-primary:hover { background: #0f766e; }
+    .btn-outline-teal {
+      background: #fff; color: #0d9488;
+      border: 1px solid #99f6e4;
+    }
+    .btn-outline-teal:hover { background: #f0fdfa; }
+
+    .search-box {
+      display: flex; align-items: center; gap: 7px;
+      border: 1.5px solid #e2e6ea; border-radius: 7px;
+      padding: 6px 12px; background: #fff; transition: border-color 0.15s;
+      font-size: 13px; color: #94a3b8;
+    }
+    .search-box:focus-within { border-color: #0d9488; }
+    .search-box input {
+      border: none; outline: none; background: transparent;
+      font-size: 13px; color: #1a2332; width: 180px;
+    }
+    .search-box input::placeholder { color: #94a3b8; }
+
+    .user-select {
+      display: flex; align-items: center; gap: 8px;
+      border: 1.5px solid #e2e6ea; border-radius: 7px;
+      padding: 5px 10px; background: #fff; cursor: pointer;
+      font-size: 13px; color: #1a2332; transition: border-color 0.15s;
+    }
+    .user-select:hover { border-color: #0d9488; }
+    .user-avatar-sm {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: linear-gradient(135deg, #0d9488, #14b8a6);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 9px; font-weight: 700; flex-shrink: 0;
+    }
+
+    /* ─── TABLE ─── */
+    .table-wrap {
+      background: #fff;
+      border: 1px solid #edf0f3;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead tr {
+      background: #f8fafc;
+      border-bottom: 1px solid #edf0f3;
+    }
+    th {
+      padding: 11px 14px; text-align: right;
+      font-size: 11px; font-weight: 600; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      white-space: nowrap; user-select: none; cursor: pointer;
+    }
+    th:first-child, th.col-client { text-align: left; }
+    th:last-child { text-align: center; }
+    th .sort-icon { opacity: 0.4; margin-left: 4px; font-size: 10px; }
+    th:hover .sort-icon { opacity: 1; }
+
+    /* Couleurs des en-têtes d'âge */
+    th.col-courant { color: #0d9488; }
+    th.col-1-30 { color: #65a30d; }
+    th.col-31-60 { color: #d97706; }
+    th.col-61-90 { color: #ea580c; }
+    th.col-91 { color: #dc2626; }
+
+    tbody tr {
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fafbfc; }
+    tbody tr.selected { background: #f0fdfa; }
+
+    td {
+      padding: 13px 14px; text-align: right;
+      color: #1a2332; vertical-align: middle;
+    }
+    td:first-child { text-align: left; }
+    td.col-client { text-align: left; }
+    td.col-actions { text-align: center; }
+
+    /* Cellules vides */
+    td.empty { color: #e2e6ea; }
+
+    /* Cellules colorées selon l'âge */
+    td.age-courant { color: #0d9488; font-weight: 500; }
+    td.age-1-30 { color: #65a30d; font-weight: 500; }
+    td.age-31-60 { color: #d97706; font-weight: 500; }
+    td.age-61-90 { color: #ea580c; font-weight: 500; }
+    td.age-91 { color: #dc2626; font-weight: 500; }
+
+    td.col-total { font-weight: 700; color: #1a2332; }
+
+    /* Client cell */
+    .client-cell { display: flex; align-items: center; gap: 10px; }
+    .client-avatar {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .client-name { font-weight: 600; color: #1a2332; font-size: 13px; }
+
+    /* Risk badge */
+    .risk-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .risk-badge.critique { background: #fef2f2; color: #dc2626; }
+    .risk-badge.eleve { background: #fff7ed; color: #ea580c; }
+    .risk-badge.modere { background: #fefce8; color: #ca8a04; }
+    .risk-badge.faible { background: #f0fdf4; color: #16a34a; }
+    .risk-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .risk-dot.critique { background: #dc2626; }
+    .risk-dot.eleve { background: #ea580c; }
+    .risk-dot.modere { background: #ca8a04; }
+    .risk-dot.faible { background: #16a34a; }
+
+    /* Assigné à */
+    .assignee { display: flex; align-items: center; gap: 7px; justify-content: flex-start; }
+    .assignee-avatar {
+      width: 24px; height: 24px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .assignee-name { font-size: 12px; color: #64748b; }
+
+    /* Checkbox */
+    .cb { width: 16px; height: 16px; accent-color: #0d9488; cursor: pointer; }
+
+    /* Row actions */
+    .row-actions { display: flex; align-items: center; gap: 4px; justify-content: center; opacity: 0; transition: opacity 0.15s; }
+    tbody tr:hover .row-actions { opacity: 1; }
+    .row-btn {
+      width: 28px; height: 28px; border-radius: 6px; border: none;
+      background: transparent; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; font-size: 14px;
+      color: #94a3b8; transition: all 0.15s;
+    }
+    .row-btn:hover { background: #f1f5f9; color: #1a2332; }
+
+    /* Total row */
+    .total-row td {
+      background: #f8fafc;
+      font-weight: 700; color: #1a2332;
+      border-top: 2px solid #edf0f3;
+      font-size: 13px;
+    }
+    .total-row td.col-total { color: #0d9488; font-size: 14px; }
+
+    /* Age bar mini */
+    .age-bar {
+      display: flex; height: 4px; border-radius: 2px; overflow: hidden;
+      width: 60px; gap: 1px; margin-top: 4px;
+    }
+    .age-seg { height: 100%; border-radius: 1px; }
+
+    /* ─── FILTER SECTION ─── */
+    .filter-section {
+      background: #fff;
+      border: 1px solid #edf0f3;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .filter-label { font-size: 12px; color: #94a3b8; font-weight: 500; flex-shrink: 0; }
+    .filter-type-select {
+      display: flex; align-items: center; gap: 6px;
+      border: 1.5px solid #e2e6ea; border-radius: 7px;
+      padding: 5px 10px; background: #fff; cursor: pointer;
+      font-size: 12px; color: #64748b; transition: border-color 0.15s;
+    }
+    .filter-type-select:hover { border-color: #0d9488; }
+    .filter-save-btn {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 7px; font-size: 12px;
+      font-weight: 500; cursor: pointer; transition: all 0.15s;
+      border: 1px solid #e2e6ea; background: #fff; color: #64748b;
+    }
+    .filter-save-btn:hover { border-color: #0d9488; color: #0d9488; background: #f0fdfa; }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: #94a3b8;
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-text { font-size: 14px; }
+
+    /* ─── PAGINATION ─── */
+    .table-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-top: 1px solid #f1f5f9;
+      font-size: 12px; color: #94a3b8;
+    }
+    .pagination { display: flex; align-items: center; gap: 4px; }
+    .page-btn {
+      width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e2e6ea;
+      background: #fff; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; font-size: 12px; color: #64748b; transition: all 0.15s;
+    }
+    .page-btn:hover { border-color: #0d9488; color: #0d9488; }
+    .page-btn.active { background: #0d9488; color: #fff; border-color: #0d9488; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">Fx</div>
+    <div>
+      <div class="logo-text">ACME</div>
+      <div class="logo-sub">Corporation</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Accueil</div>
+    <a class="sidebar-item" href="#"><span class="icon">⊞</span> Tableau de bord</a>
+    <a class="sidebar-item active" href="#"><span class="icon">📄</span> Comptes à recevoir</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Copilote IA</div>
+    <a class="sidebar-item" href="#"><span class="icon">⚡</span> Actions <span class="sidebar-badge">2</span></a>
+    <a class="sidebar-item" href="#"><span class="icon">☆</span> Recommandations</a>
+    <a class="sidebar-item" href="#"><span class="icon">✉</span> File d'envoi</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Données</div>
+    <a class="sidebar-item" href="#"><span class="icon">👥</span> Clients</a>
+    <a class="sidebar-item" href="#"><span class="icon">↓</span> Importer des données</a>
+    <a class="sidebar-item" href="#"><span class="icon">📊</span> Rapports</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">ACME Inc</div>
+    <a class="sidebar-item" href="#"><span class="icon">✉</span> Gestion des courriels</a>
+    <a class="sidebar-item" href="#"><span class="icon">👤</span> Attribution des clients</a>
+    <a class="sidebar-item" href="#"><span class="icon">👥</span> Utilisateurs</a>
+    <a class="sidebar-item" href="#"><span class="icon">⚙</span> Paramètres</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Profil</div>
+    <a class="sidebar-item" href="#"><span class="icon">👤</span> Général</a>
+    <a class="sidebar-item" href="#"><span class="icon">✉</span> Mes boîtes courriels</a>
+  </div>
+</aside>
+
+<!-- ─── HEADER ─── -->
+<header class="header">
+  <div class="header-breadcrumb">
+    <span>🏠</span>
+    <span>›</span>
+    <span class="current">Comptes à recevoir</span>
+  </div>
+  <div class="header-actions">
+    <button class="lang-btn">English</button>
+    <button class="lang-btn active">Français</button>
+    <div class="avatar">SM</div>
+  </div>
+</header>
+
+<!-- ─── MAIN ─── -->
+<main class="main">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <h1 class="page-title">Comptes à recevoir</h1>
+    <div class="usage-badge">
+      <div class="usage-bar-wrap"><div class="usage-bar-fill"></div></div>
+      Utilisation 8 / 1 000 (1%)
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card normal">
+      <div class="kpi-icon teal">💰</div>
+      <div class="kpi-body">
+        <div class="kpi-label">Total du portefeuille</div>
+        <div class="kpi-value">115 110,56 <span style="font-size:14px;font-weight:500;color:#64748b">CAD</span></div>
+        <div class="kpi-sub">5 clients actifs</div>
+      </div>
+    </div>
+    <div class="kpi-card warning">
+      <div class="kpi-icon orange">⚠️</div>
+      <div class="kpi-body">
+        <div class="kpi-label">En souffrance 91+ jours</div>
+        <div class="kpi-value orange">53 300,00 <span style="font-size:14px;font-weight:500;color:#ea580c">CAD</span></div>
+        <div class="kpi-sub">46,3% du portefeuille</div>
+      </div>
+    </div>
+    <div class="kpi-card critical">
+      <div class="kpi-icon red">🔴</div>
+      <div class="kpi-body">
+        <div class="kpi-label">Comptes à risque</div>
+        <div class="kpi-value red">4</div>
+        <div class="kpi-sub">2 critiques · 2 élevés</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <div class="tab">Tous les comptes <span class="tab-count">8</span></div>
+    <div class="tab">Comptes critiques <span class="tab-count" style="background:#fef2f2;color:#dc2626">2</span></div>
+    <div class="tab">91+ jours <span class="tab-count" style="background:#fef2f2;color:#dc2626">2</span></div>
+    <div class="tab active">Mes comptes <span class="tab-count">5</span></div>
+    <div class="tab-add">+</div>
+  </div>
+
+  <!-- Filter section -->
+  <div class="filter-section">
+    <span class="filter-label">Filtres :</span>
+    <div class="filter-chip">
+      👤 Mes comptes assignés
+      <div class="filter-chip-remove">✕</div>
+    </div>
+    <div class="filter-type-select">
+      Sélectionner le type ▾
+    </div>
+    <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;">+ Ajouter un filtre</button>
+    <button class="filter-save-btn">💾 Enregistrer la vue</button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="user-select">
+        <div class="user-avatar-sm">SM</div>
+        Sacha Moquin (moi) ▾
+      </div>
+      <div class="search-box">
+        🔍
+        <input type="text" placeholder="Rechercher par client…" />
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-ghost" style="font-size:12px;padding:6px 10px;">⊞ Colonnes</button>
+      <button class="btn btn-ghost" style="font-size:12px;padding:6px 10px;">↓ Exporter CSV (5)</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:36px;text-align:center"><input type="checkbox" class="cb" /></th>
+          <th class="col-client">Client <span class="sort-icon">↕</span></th>
+          <th class="col-courant">Courant <span class="sort-icon">↕</span></th>
+          <th class="col-1-30">1–30 j <span class="sort-icon">↕</span></th>
+          <th class="col-31-60">31–60 j <span class="sort-icon">↕</span></th>
+          <th class="col-61-90">61–90 j <span class="sort-icon">↕</span></th>
+          <th class="col-91">91+ j <span class="sort-icon">↕</span></th>
+          <th>Total <span class="sort-icon">↕</span></th>
+          <th style="text-align:left">Risque</th>
+          <th style="text-align:left">Assigné à</th>
+          <th style="width:72px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Acme inc -->
+        <tr>
+          <td style="text-align:center"><input type="checkbox" class="cb" /></td>
+          <td class="col-client">
+            <div class="client-cell">
+              <div class="client-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">AI</div>
+              <div class="client-name">Acme inc</div>
+            </div>
+          </td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="age-31-60">34 492,50</td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="col-total">34 492,50</td>
+          <td><span class="risk-badge eleve"><span class="risk-dot eleve"></span>Élevé</span></td>
+          <td>
+            <div class="assignee">
+              <div class="assignee-avatar" style="background:linear-gradient(135deg,#0d9488,#14b8a6)">SM</div>
+              <span class="assignee-name">Sacha Moquin</span>
+            </div>
+          </td>
+          <td class="col-actions"><div class="row-actions"><button class="row-btn">✉</button><button class="row-btn">⋯</button></div></td>
+        </tr>
+        <!-- Garage BigZ -->
+        <tr>
+          <td style="text-align:center"><input type="checkbox" class="cb" /></td>
+          <td class="col-client">
+            <div class="client-cell">
+              <div class="client-avatar" style="background:linear-gradient(135deg,#dc2626,#ef4444)">GB</div>
+              <div class="client-name">Garage BigZ</div>
+            </div>
+          </td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="age-91">50 000,00</td>
+          <td class="col-total">50 000,00</td>
+          <td><span class="risk-badge critique"><span class="risk-dot critique"></span>Critique</span></td>
+          <td>
+            <div class="assignee">
+              <div class="assignee-avatar" style="background:linear-gradient(135deg,#0d9488,#14b8a6)">SM</div>
+              <span class="assignee-name">Sacha Moquin</span>
+            </div>
+          </td>
+          <td class="col-actions"><div class="row-actions"><button class="row-btn">✉</button><button class="row-btn">⋯</button></div></td>
+        </tr>
+        <!-- Groupe Aurelia -->
+        <tr>
+          <td style="text-align:center"><input type="checkbox" class="cb" /></td>
+          <td class="col-client">
+            <div class="client-cell">
+              <div class="client-avatar" style="background:linear-gradient(135deg,#d97706,#f59e0b)">GA</div>
+              <div class="client-name">Groupe Aurelia</div>
+            </div>
+          </td>
+          <td class="empty">—</td>
+          <td class="age-1-30">13 723,00</td>
+          <td class="age-31-60">10 490,72</td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="col-total">24 213,72</td>
+          <td><span class="risk-badge eleve"><span class="risk-dot eleve"></span>Élevé</span></td>
+          <td>
+            <div class="assignee">
+              <div class="assignee-avatar" style="background:linear-gradient(135deg,#0d9488,#14b8a6)">SM</div>
+              <span class="assignee-name">Sacha Moquin</span>
+            </div>
+          </td>
+          <td class="col-actions"><div class="row-actions"><button class="row-btn">✉</button><button class="row-btn">⋯</button></div></td>
+        </tr>
+        <!-- Guillaume Blackburn -->
+        <tr>
+          <td style="text-align:center"><input type="checkbox" class="cb" /></td>
+          <td class="col-client">
+            <div class="client-cell">
+              <div class="client-avatar" style="background:linear-gradient(135deg,#dc2626,#ef4444)">GB</div>
+              <div class="client-name">Guillaume Blackburn</div>
+            </div>
+          </td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="age-91">3 300,00</td>
+          <td class="col-total">3 300,00</td>
+          <td><span class="risk-badge critique"><span class="risk-dot critique"></span>Critique</span></td>
+          <td>
+            <div class="assignee">
+              <div class="assignee-avatar" style="background:linear-gradient(135deg,#0d9488,#14b8a6)">SM</div>
+              <span class="assignee-name">Sacha Moquin</span>
+            </div>
+          </td>
+          <td class="col-actions"><div class="row-actions"><button class="row-btn">✉</button><button class="row-btn">⋯</button></div></td>
+        </tr>
+        <!-- Nordik inc -->
+        <tr>
+          <td style="text-align:center"><input type="checkbox" class="cb" /></td>
+          <td class="col-client">
+            <div class="client-cell">
+              <div class="client-avatar" style="background:linear-gradient(135deg,#0d9488,#14b8a6)">NI</div>
+              <div class="client-name">Nordik inc</div>
+            </div>
+          </td>
+          <td class="age-courant">2 069,56</td>
+          <td class="age-1-30">1 034,78</td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="empty">—</td>
+          <td class="col-total">3 104,34</td>
+          <td><span class="risk-badge modere"><span class="risk-dot modere"></span>Modéré</span></td>
+          <td>
+            <div class="assignee">
+              <div class="assignee-avatar" style="background:linear-gradient(135deg,#0d9488,#14b8a6)">SM</div>
+              <span class="assignee-name">Sacha Moquin</span>
+            </div>
+          </td>
+          <td class="col-actions"><div class="row-actions"><button class="row-btn">✉</button><button class="row-btn">⋯</button></div></td>
+        </tr>
+      </tbody>
+      <!-- Total row -->
+      <tfoot>
+        <tr class="total-row">
+          <td></td>
+          <td class="col-client" style="font-weight:700;color:#1a2332">Total général</td>
+          <td style="text-align:right;color:#0d9488;font-weight:700">2 069,56</td>
+          <td style="text-align:right;color:#65a30d;font-weight:700">14 757,78</td>
+          <td style="text-align:right;color:#d97706;font-weight:700">44 983,22</td>
+          <td style="text-align:right;color:#94a3b8">—</td>
+          <td style="text-align:right;color:#dc2626;font-weight:700">53 300,00</td>
+          <td class="col-total" style="font-size:14px">115 110,56</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="table-footer">
+      <span>5 résultats</span>
+      <div class="pagination">
+        <button class="page-btn">‹‹</button>
+        <button class="page-btn">‹</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">›</button>
+        <button class="page-btn">››</button>
+      </div>
+      <span>25 par page ▾</span>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>
