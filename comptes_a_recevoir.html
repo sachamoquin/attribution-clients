@@ -374,30 +374,146 @@
     .age-seg { height: 100%; border-radius: 1px; }
 
     /* ─── FILTER SECTION ─── */
-    .filter-section {
-      background: #fff;
-      border: 1px solid #edf0f3;
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-bottom: 14px;
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    .filter-bar {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 14px; flex-wrap: wrap;
+      position: relative;
     }
-    .filter-label { font-size: 12px; color: #94a3b8; font-weight: 500; flex-shrink: 0; }
-    .filter-type-select {
-      display: flex; align-items: center; gap: 6px;
-      border: 1.5px solid #e2e6ea; border-radius: 7px;
-      padding: 5px 10px; background: #fff; cursor: pointer;
-      font-size: 12px; color: #64748b; transition: border-color 0.15s;
+    .filter-bar-label {
+      font-size: 12px; color: #94a3b8; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0;
+      margin-right: 2px;
     }
-    .filter-type-select:hover { border-color: #0d9488; }
+    .filter-chips-row {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1;
+    }
+    .filter-chip {
+      display: inline-flex; align-items: center; gap: 0;
+      background: #fff; border: 1.5px solid #e2e6ea;
+      border-radius: 8px; overflow: hidden;
+      font-size: 12px; font-weight: 500; cursor: default;
+      transition: border-color 0.15s;
+    }
+    .filter-chip:hover { border-color: #0d9488; }
+    .filter-chip-category {
+      padding: 5px 8px 5px 10px;
+      background: #f8fafc; color: #64748b;
+      font-size: 11px; font-weight: 600;
+      border-right: 1px solid #e2e6ea;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .filter-chip-value {
+      padding: 5px 8px; color: #1a2332; font-weight: 500;
+    }
+    .filter-chip-remove {
+      padding: 5px 8px 5px 4px;
+      color: #94a3b8; cursor: pointer; font-size: 11px;
+      transition: color 0.15s; line-height: 1;
+    }
+    .filter-chip-remove:hover { color: #dc2626; }
+
+    /* Chip teal pour filtres actifs importants */
+    .filter-chip.teal { border-color: #99f6e4; background: #f0fdfa; }
+    .filter-chip.teal .filter-chip-category { background: #ccfbf1; color: #0d9488; border-right-color: #99f6e4; }
+    .filter-chip.teal .filter-chip-value { color: #0d9488; }
+    .filter-chip.teal .filter-chip-remove { color: #5eead4; }
+    .filter-chip.teal .filter-chip-remove:hover { color: #0d9488; }
+
+    /* Bouton ajouter filtre */
+    .filter-add-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 8px;
+      border: 1.5px dashed #cbd5e1; background: transparent;
+      font-size: 12px; font-weight: 500; color: #64748b;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .filter-add-btn:hover { border-color: #0d9488; color: #0d9488; background: #f0fdfa; }
+    .filter-add-btn.active { border-color: #0d9488; color: #0d9488; background: #f0fdfa; border-style: solid; }
+
+    /* Bouton tout effacer */
+    .filter-clear-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border-radius: 8px;
+      border: none; background: transparent;
+      font-size: 12px; color: #94a3b8;
+      cursor: pointer; transition: color 0.15s;
+    }
+    .filter-clear-btn:hover { color: #dc2626; }
+
+    /* Bouton enregistrer la vue */
     .filter-save-btn {
-      margin-left: auto;
-      display: flex; align-items: center; gap: 6px;
-      padding: 5px 12px; border-radius: 7px; font-size: 12px;
+      margin-left: auto; flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 12px; border-radius: 8px; font-size: 12px;
       font-weight: 500; cursor: pointer; transition: all 0.15s;
       border: 1px solid #e2e6ea; background: #fff; color: #64748b;
     }
     .filter-save-btn:hover { border-color: #0d9488; color: #0d9488; background: #f0fdfa; }
+    .filter-save-btn.has-changes { border-color: #0d9488; color: #0d9488; background: #f0fdfa; font-weight: 600; }
+
+    /* Panneau d'ajout de filtre */
+    .filter-panel {
+      position: absolute; top: calc(100% + 6px); left: 0;
+      background: #fff; border: 1px solid #e2e6ea;
+      border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+      z-index: 200; width: 520px; display: none;
+      overflow: hidden;
+    }
+    .filter-panel.open { display: flex; }
+    .filter-panel-left {
+      width: 160px; flex-shrink: 0;
+      background: #f8fafc; border-right: 1px solid #edf0f3;
+      padding: 8px 0;
+    }
+    .filter-panel-category {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 14px; font-size: 13px; color: #4b5563;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .filter-panel-category:hover { background: #f0fdfa; color: #0d9488; }
+    .filter-panel-category.active { background: #f0fdfa; color: #0d9488; font-weight: 600; }
+    .filter-panel-category .cat-icon { font-size: 14px; width: 18px; text-align: center; }
+    .filter-panel-right {
+      flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .filter-panel-title {
+      font-size: 12px; font-weight: 700; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;
+    }
+    .filter-option {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: 8px; cursor: pointer;
+      transition: background 0.12s; font-size: 13px; color: #1a2332;
+    }
+    .filter-option:hover { background: #f8fafc; }
+    .filter-option input[type=checkbox] { accent-color: #0d9488; width: 15px; height: 15px; }
+    .filter-option-label { flex: 1; }
+    .filter-option-count {
+      font-size: 11px; color: #94a3b8; background: #f1f5f9;
+      border-radius: 10px; padding: 1px 7px;
+    }
+    .filter-panel-footer {
+      padding: 10px 16px; border-top: 1px solid #edf0f3;
+      display: flex; justify-content: flex-end; gap: 8px;
+      background: #fafbfc;
+    }
+    .fp-btn-cancel {
+      padding: 6px 14px; border-radius: 7px; border: 1px solid #e2e6ea;
+      background: #fff; font-size: 12px; color: #64748b; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .fp-btn-cancel:hover { border-color: #cbd5e1; color: #1a2332; }
+    .fp-btn-apply {
+      padding: 6px 14px; border-radius: 7px; border: none;
+      background: #0d9488; color: #fff; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .fp-btn-apply:hover { background: #0f766e; }
+
+    /* Séparateur vertical dans la filter-bar */
+    .filter-divider {
+      width: 1px; height: 20px; background: #e2e6ea; flex-shrink: 0;
+    }
 
     /* ─── EMPTY STATE ─── */
     .empty-state {
@@ -532,18 +648,188 @@
     <div class="tab-add">+</div>
   </div>
 
-  <!-- Filter section -->
-  <div class="filter-section">
-    <span class="filter-label">Filtres :</span>
-    <div class="filter-chip">
-      👤 Mes comptes assignés
-      <div class="filter-chip-remove">✕</div>
+  <!-- Filter bar -->
+  <div class="filter-bar" id="filterBar">
+    <span class="filter-bar-label">Filtres</span>
+
+    <div class="filter-chips-row" id="filterChipsRow">
+      <!-- Chip : Assigné à -->
+      <div class="filter-chip teal">
+        <span class="filter-chip-category">Assigné à</span>
+        <span class="filter-chip-value">Sacha Moquin</span>
+        <span class="filter-chip-remove" onclick="removeChip(this)">✕</span>
+      </div>
+      <!-- Chip : Risque -->
+      <div class="filter-chip">
+        <span class="filter-chip-category">Risque</span>
+        <span class="filter-chip-value">Critique, Élevé</span>
+        <span class="filter-chip-remove" onclick="removeChip(this)">✕</span>
+      </div>
     </div>
-    <div class="filter-type-select">
-      Sélectionner le type ▾
+
+    <button class="filter-clear-btn" id="clearAllBtn" onclick="clearAllFilters()">✕ Tout effacer</button>
+    <div class="filter-divider"></div>
+
+    <!-- Bouton ajouter un filtre -->
+    <button class="filter-add-btn" id="filterAddBtn" onclick="toggleFilterPanel()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      Ajouter un filtre
+    </button>
+
+    <button class="filter-save-btn has-changes" id="filterSaveBtn">💾 Enregistrer la vue</button>
+
+    <!-- Panneau de filtres -->
+    <div class="filter-panel" id="filterPanel">
+      <!-- Colonne gauche : catégories -->
+      <div class="filter-panel-left">
+        <div class="filter-panel-category active" onclick="showCategory('assigne')">
+          <span class="cat-icon">👤</span> Assigné à
+        </div>
+        <div class="filter-panel-category" onclick="showCategory('risque')">
+          <span class="cat-icon">⚠️</span> Risque
+        </div>
+        <div class="filter-panel-category" onclick="showCategory('age')">
+          <span class="cat-icon">📅</span> Âge de la dette
+        </div>
+        <div class="filter-panel-category" onclick="showCategory('montant')">
+          <span class="cat-icon">💰</span> Montant
+        </div>
+        <div class="filter-panel-category" onclick="showCategory('statut')">
+          <span class="cat-icon">🔖</span> Statut client
+        </div>
+      </div>
+
+      <!-- Colonne droite : options -->
+      <div class="filter-panel-right">
+        <!-- Assigné à -->
+        <div id="cat-assigne">
+          <div class="filter-panel-title">Assigné à</div>
+          <label class="filter-option">
+            <input type="checkbox" checked />
+            <span class="filter-option-label">Sacha Moquin (moi)</span>
+            <span class="filter-option-count">5</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">Jean-Pierre Gagnon</span>
+            <span class="filter-option-count">8</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">Marie-Claire Dubois</span>
+            <span class="filter-option-count">12</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">J. Gélineau</span>
+            <span class="filter-option-count">2</span>
+          </label>
+        </div>
+        <!-- Risque -->
+        <div id="cat-risque" style="display:none">
+          <div class="filter-panel-title">Niveau de risque</div>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label" style="color:#dc2626;font-weight:600">● Critique</span>
+            <span class="filter-option-count">2</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label" style="color:#ea580c;font-weight:600">● Élevé</span>
+            <span class="filter-option-count">2</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label" style="color:#ca8a04;font-weight:600">● Modéré</span>
+            <span class="filter-option-count">1</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label" style="color:#16a34a;font-weight:600">● Faible</span>
+            <span class="filter-option-count">3</span>
+          </label>
+        </div>
+        <!-- Âge -->
+        <div id="cat-age" style="display:none">
+          <div class="filter-panel-title">Âge de la dette</div>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">Courant</span>
+            <span class="filter-option-count">1</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">1–30 jours</span>
+            <span class="filter-option-count">2</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">31–60 jours</span>
+            <span class="filter-option-count">2</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">61–90 jours</span>
+            <span class="filter-option-count">0</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">91+ jours</span>
+            <span class="filter-option-count">2</span>
+          </label>
+        </div>
+        <!-- Montant -->
+        <div id="cat-montant" style="display:none">
+          <div class="filter-panel-title">Montant total</div>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">Moins de 5 000 CAD</span>
+            <span class="filter-option-count">1</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">5 000 – 25 000 CAD</span>
+            <span class="filter-option-count">2</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">25 000 – 50 000 CAD</span>
+            <span class="filter-option-count">1</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">Plus de 50 000 CAD</span>
+            <span class="filter-option-count">1</span>
+          </label>
+        </div>
+        <!-- Statut -->
+        <div id="cat-statut" style="display:none">
+          <div class="filter-panel-title">Statut client</div>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">Client actif</span>
+            <span class="filter-option-count">5</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">Client inactif</span>
+            <span class="filter-option-count">3</span>
+          </label>
+          <label class="filter-option">
+            <input type="checkbox" />
+            <span class="filter-option-label">Prospect</span>
+            <span class="filter-option-count">0</span>
+          </label>
+        </div>
+
+        <div class="filter-panel-footer">
+          <button class="fp-btn-cancel" onclick="toggleFilterPanel()">Annuler</button>
+          <button class="fp-btn-apply" onclick="applyFilter()">Appliquer</button>
+        </div>
+      </div>
     </div>
-    <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;">+ Ajouter un filtre</button>
-    <button class="filter-save-btn">💾 Enregistrer la vue</button>
   </div>
 
   <!-- Toolbar -->
@@ -736,5 +1022,59 @@
   </div>
 
 </main>
+<script>
+  // Fermer le panneau en cliquant ailleurs
+  document.addEventListener('click', function(e) {
+    const panel = document.getElementById('filterPanel');
+    const btn = document.getElementById('filterAddBtn');
+    if (!panel.contains(e.target) && !btn.contains(e.target)) {
+      panel.classList.remove('open');
+      btn.classList.remove('active');
+    }
+  });
+
+  function toggleFilterPanel() {
+    const panel = document.getElementById('filterPanel');
+    const btn = document.getElementById('filterAddBtn');
+    panel.classList.toggle('open');
+    btn.classList.toggle('active');
+  }
+
+  function showCategory(cat) {
+    // Masquer toutes les catégories
+    ['assigne','risque','age','montant','statut'].forEach(function(c) {
+      const el = document.getElementById('cat-' + c);
+      if (el) el.style.display = 'none';
+    });
+    // Afficher la catégorie sélectionnée
+    const target = document.getElementById('cat-' + cat);
+    if (target) target.style.display = 'block';
+    // Mettre à jour l'état actif
+    document.querySelectorAll('.filter-panel-category').forEach(function(el) {
+      el.classList.remove('active');
+    });
+    event.currentTarget.classList.add('active');
+  }
+
+  function removeChip(el) {
+    el.closest('.filter-chip').remove();
+    updateClearBtn();
+  }
+
+  function clearAllFilters() {
+    document.getElementById('filterChipsRow').innerHTML = '';
+    updateClearBtn();
+  }
+
+  function updateClearBtn() {
+    const chips = document.querySelectorAll('#filterChipsRow .filter-chip');
+    const btn = document.getElementById('clearAllBtn');
+    btn.style.display = chips.length > 0 ? 'inline-flex' : 'none';
+  }
+
+  function applyFilter() {
+    toggleFilterPanel();
+  }
+</script>
 </body>
 </html>
