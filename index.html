@@ -209,6 +209,18 @@
     .companies-table thead th.col-check { width: 44px; padding-right: 0; }
     .companies-table thead th.col-count { text-align: right; }
 
+    /* Sous-filtre cliquable dans le séparateur */
+    .group-sub-filter {
+      font-size: 10px; font-weight: 600; color: #9aa5b4;
+      text-transform: none; letter-spacing: 0;
+      cursor: pointer; padding: 2px 8px;
+      border-radius: 10px; border: 1px solid #e2e6ea;
+      background: #fff; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .group-sub-filter:hover { border-color: #0d9488; color: #0d9488; background: #f0fdfa; }
+    .group-sub-filter.active { border-color: #0d9488; color: #0d9488; background: #f0fdfa; font-weight: 700; }
+
     /* Group separator */
     .group-sep td {
       padding: 6px 20px;
@@ -436,6 +448,7 @@
   let draft = null; // working copy (Set)
   let currentTab = 'selected'; // 'selected' | 'all'
   let memberSortAsc = true;
+  let showOnlyUnassigned = false; // filtre "Entreprises non attribuées"
 
   /* ── Helpers ──────────────────────────────────────────────────────── */
   function initials(name) {
@@ -490,6 +503,7 @@
   function selectMember(id) {
     selectedMember = id;
     draft = new Set(assignments[id]);
+    showOnlyUnassigned = false; // réinitialiser le filtre au changement de membre
     renderMembers();
     showCompaniesPanel();
     renderCompanies();
@@ -510,14 +524,21 @@
     const tbody    = document.getElementById('companiesBody');
     const countHdr = document.getElementById('countHeader');
 
-    // Split: assigned to current member first, then unassigned
+    // Split: assigned to current member first, then others
     const assigned   = list.filter(c =>  draft.has(c.id)).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
-    const unassigned = list.filter(c => !draft.has(c.id)).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+    // "Autres" = not assigned to current member
+    let unassigned = list.filter(c => !draft.has(c.id)).sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+
+    // Sous-ensemble vraiment non attribuées (aucun membre)
+    const trulyUnassigned = unassigned.filter(c => !members.some(m => assignments[m.id].has(c.id)));
+
+    // Si le filtre est actif, on restreint la liste "autres" aux vraiment non attribuées
+    const displayedUnassigned = showOnlyUnassigned ? trulyUnassigned : unassigned;
 
     countHdr.textContent = '';
 
     // Are all "autres" companies selected?
-    const allOthersSelected = unassigned.length > 0 && unassigned.every(c => draft.has(c.id));
+    const allOthersSelected = displayedUnassigned.length > 0 && displayedUnassigned.every(c => draft.has(c.id));
     // Are all assigned companies still all checked?
     const allAssignedChecked = assigned.length > 0 && assigned.every(c => draft.has(c.id));
 
@@ -534,11 +555,22 @@
     }
     if (unassigned.length > 0) {
       const sepCb = `<div class="cb ${allOthersSelected ? 'checked' : ''}" onclick="toggleGroup('others')" style="display:inline-flex;"></div>`;
+      // Libellé dynamique selon le filtre actif
+      const groupTitle = showOnlyUnassigned
+        ? `Toutes les autres entreprises — ${displayedUnassigned.length}`
+        : `Autres entreprises — ${displayedUnassigned.length}`;
+      // Sous-titre cliquable
+      const subLabel = showOnlyUnassigned
+        ? `<span class="group-sub-filter active" onclick="event.stopPropagation();toggleUnassignedFilter()">✕ Entreprises non attribuées</span>`
+        : `<span class="group-sub-filter" onclick="event.stopPropagation();toggleUnassignedFilter()">Entreprises non attribuées</span>`;
       html += `<tr class="group-sep">
         <td style="width:44px;padding-right:0;">${sepCb}</td>
-        <td colspan="2">Autres entreprises — ${unassigned.length}</td>
+        <td colspan="2" style="display:flex;align-items:center;gap:10px;">
+          <span>${groupTitle}</span>
+          ${subLabel}
+        </td>
       </tr>`;
-      html += unassigned.map(c => rowHtml(c)).join('');
+      html += displayedUnassigned.map(c => rowHtml(c)).join('');
     }
     if (html === '') {
       html = `<tr><td colspan="3" style="padding:32px;text-align:center;color:#9aa5b4;font-size:13px;">
@@ -603,6 +635,11 @@
     else            visible.forEach(c => draft.add(c.id));
     renderCompanies();
     renderMembers();
+  }
+
+  function toggleUnassignedFilter() {
+    showOnlyUnassigned = !showOnlyUnassigned;
+    renderCompanies();
   }
 
   function toggleGroup(group) {
